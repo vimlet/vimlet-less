@@ -9,7 +9,7 @@ This is a tool that compile less files.
 
 ## Installation
 
-npm install @vimlet/less -g
+npm install @vimlet/less
 
 ## Usage
 
