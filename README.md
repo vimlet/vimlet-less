@@ -1,4 +1,4 @@
-# VimletLess
+# vimlet-less
 
 This is a tool that compile less files.
 
