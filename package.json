@@ -9,7 +9,7 @@
   "scripts": {},
   "dependencies": {
     "@vimlet/cli": "1.0.0",
-    "@vimlet/io": "0.0.5",
+    "@vimlet/io": "0.0.6",
     "less": "3.8.1",
     "glob-watcher": "5.0.1"
   },

@@ -23,7 +23,6 @@ module.exports.render = function (include, output, options, callback) {
     var rootsArray = io.getFiles(include, options);
     rootsArray.forEach(function (rootObject) {
         rootObject.files.forEach(function (relativePath) {
-            if (!io.isDirectory(path.join(rootObject.root, relativePath))) {
                 less.render(fs.readFileSync(path.join(rootObject.root, relativePath)).toString(), {
                     filename: relativePath
                 }, function (e, out) {
@@ -39,7 +38,6 @@ module.exports.render = function (include, output, options, callback) {
                         }
                     }
                 });
-            }
         });
     });
 };
