@@ -1,4 +1,6 @@
-# Vimlet Less
+<p align='center'>
+<img src='https://vimlet.com/resources/img/less-txt.png' title='Vimlet Cli' alt='Vimlet Less'>
+</p>
 
 This is a tool that compile less files.
 
@@ -42,3 +44,8 @@ npm install @vimlet/less
 * `vimlet-less -i include -o output -e exclude -c -w`
 
     Calls less.watch
+
+
+## License
+Vimlet Less is released under MIT License. See [LICENSE](https://github.com/vimlet/vimlet-less/blob/master/LICENSE) for details.
+
