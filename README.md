@@ -1,5 +1,5 @@
 <p align='center'>
-<img src='https://vimlet.com/resources/img/less-txt.png' title='Vimlet Less' alt='Vimlet Less'>
+<img src='https://vimlet.com/resources/img/less-txt.png' title='Vimlet Less' alt='Vimlet Less' style="height:150px;">
 </p>
 
 This is a tool that compile less files.
