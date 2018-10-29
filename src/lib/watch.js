@@ -28,7 +28,7 @@ exports.watch = function (include, output, options) {
       });
     }
   });
-  watcher.on('add', function (filePath, stat) {
+  watcher.on('add', function (filePath, stat) {    
     if (!isExcluded(options.exclude, filePath)) {
       // Relative output is where the template will be saved after parsed
       var relativeOutput = getRelativeOutput(include, output, filePath);
@@ -57,7 +57,7 @@ exports.watch = function (include, output, options) {
     }
   });
   watcher.on('addDir', function (filePath, stat) {
-    var relativeOutput = getRelativeOutput(include, output, filePath);
+    var relativeOutput = getRelativeOutput(include, output, filePath);    
     fs.mkdirs(path.join(relativeOutput, path.basename(filePath)), function () {
       console.log("Folder created --> ", filePath, "=>", path.join(relativeOutput, path.basename(filePath)));
     });
@@ -125,7 +125,7 @@ exports.watchDirectory = function (include, exclude, callback) {
 */
 function getRelativeOutput(include, output, filePath, deleted) {
   var relativeOutput;
-  if (!Array.isArray(include)) {
+  if (!Array.isArray(include)) {        
     if (io.isInPattern(filePath, include) || deleted) {
       var rootFromPattern = io.getRootFromPattern(include);
       // Relative output is where the template will be saved after parse
@@ -141,7 +141,7 @@ function getRelativeOutput(include, output, filePath, deleted) {
         relativeOutput = path.join(output, relativeOutput);
       }
     });
-  }
+  }  
   return relativeOutput;
 }
 
