@@ -9,6 +9,7 @@ var less = require("less");
 
 
 
+
 module.exports.render = function (include, output, options, callback) {
     options = options || {};
 
@@ -23,11 +24,12 @@ module.exports.render = function (include, output, options, callback) {
     var rootsArray = io.getFiles(include, options);
     rootsArray.forEach(function (rootObject) {
         rootObject.files.forEach(function (relativePath) {
-                less.render(fs.readFileSync(path.join(rootObject.root, relativePath)).toString(), {
-                    filename: relativePath
+            var file = path.join(process.cwd(), rootObject.root, relativePath);
+                less.render(fs.readFileSync(file).toString(), {
+                    filename: file
                 }, function (e, out) {
                     if (out && out.css) {
-                        outputFile = path.join(output, relativePath).replace(".less", ".css");
+                        outputFile = path.join(process.cwd(), output, relativePath).replace(".less", ".css");
                         fs.mkdirsSync(path.dirname(outputFile));
                         fs.writeFileSync(outputFile, out.css);
                         totalFiles--;
@@ -36,6 +38,7 @@ module.exports.render = function (include, output, options, callback) {
                                 callback();
                             }
                         }
+                        console.log(file + " => " + outputFile);
                     }
                 });
         });
