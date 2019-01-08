@@ -11,7 +11,8 @@
     "@vimlet/cli": "1.2.6",
     "@vimlet/io": "0.0.8",
     "less": "3.8.1",
-    "glob-watcher": "5.0.1"
+    "glob-watcher": "5.0.1",
+    "deasync": "0.1.14"
   },
   "author": "",
   "license": "MIT"

@@ -6,13 +6,13 @@ var fs = require("fs-extra");
 var cli = require("@vimlet/cli").instantiate();
 var watch = require("./lib/watch");
 var less = require("less");
+var deasync = require("deasync");
 
 
 
 
 module.exports.render = function (include, output, options, callback) {
     options = options || {};
-
     if (options.clean) {
         fs.removeSync(output);
     }
@@ -21,30 +21,46 @@ module.exports.render = function (include, output, options, callback) {
     rootsArray.forEach(function (rootObject) {
         totalFiles += rootObject.files.length;
     });
-    var rootsArray = io.getFiles(include, options);
     rootsArray.forEach(function (rootObject) {
         rootObject.files.forEach(function (relativePath) {
             var file = path.join(process.cwd(), rootObject.root, relativePath);
-                less.render(fs.readFileSync(file).toString(), {
-                    filename: file
-                }, function (e, out) {
-                    if (out && out.css) {
-                        outputFile = path.join(process.cwd(), output, relativePath).replace(".less", ".css");
-                        fs.mkdirsSync(path.dirname(outputFile));
-                        fs.writeFileSync(outputFile, out.css);
-                        totalFiles--;
-                        if (totalFiles == 0) {
-                            if (callback) {
-                                callback();
-                            }
+            less.render(fs.readFileSync(file).toString(), {
+                filename: file
+            }, function (e, out) {
+                if (out && out.css) {
+                    outputFile = path.join(process.cwd(), output, relativePath).replace(".less", ".css");
+                    fs.mkdirsSync(path.dirname(outputFile));
+                    fs.writeFileSync(outputFile, out.css);
+                    totalFiles--;
+                    if (totalFiles == 0) {
+                        if (callback) {
+                            callback();
                         }
-                        console.log(file + " => " + outputFile);
                     }
-                });
+                    console.log(file + " => " + outputFile);
+                } else {
+                    totalFiles--;
+                    if (totalFiles == 0) {
+                        resolve();
+                    }
+                }
+            });
         });
     });
 };
 
+
+module.exports.renderSync = function (include, output, options) {
+    var done = false;
+    var data;
+    module.exports.render(include, output, options, function cb(res) {
+        data = res;
+        done = true;
+    });
+    deasync.loopWhile(function () {
+        return !done;
+    });
+};
 
 module.exports.watch = function (include, output, options) {
     module.exports.render(include, output, options);
@@ -97,7 +113,7 @@ if (!module.parent) {
             }
             module.exports.watch(include, output, options);
         } else {
-            module.exports.render(include, output, options);
+            module.exports.renderSync(include, output, options);
         }
     }
 
