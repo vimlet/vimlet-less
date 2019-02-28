@@ -20,35 +20,41 @@ module.exports.render = function (include, output, options, callback) {
     var rootsArray = io.getFiles(include, options);
     rootsArray.forEach(function (rootObject) {
         totalFiles += rootObject.files.length;
-    });    
-    rootsArray.forEach(function (rootObject) {
-        rootObject.files.forEach(function (relativePath) {
-            var file = path.join(rootObject.root, relativePath);
-            less.render(fs.readFileSync(file).toString(), {
-                filename: file
-            }, function (e, out) {
-                if (out && out.css) {
-                    outputFile = path.join(process.cwd(), output, relativePath).replace(".less", ".css");
-                    fs.mkdirsSync(path.dirname(outputFile));
-                    fs.writeFileSync(outputFile, out.css);
-                    totalFiles--;
-                    if (totalFiles == 0) {
-                        if (callback) {
-                            callback();
+    });
+    if (totalFiles === 0) {
+        if (callback) {
+            callback();
+        }
+    } else {
+        rootsArray.forEach(function (rootObject) {
+            rootObject.files.forEach(function (relativePath) {
+                var file = path.join(rootObject.root, relativePath);
+                less.render(fs.readFileSync(file).toString(), {
+                    filename: file
+                }, function (e, out) {
+                    if (out && out.css) {
+                        outputFile = path.join(process.cwd(), output, relativePath).replace(".less", ".css");
+                        fs.mkdirsSync(path.dirname(outputFile));
+                        fs.writeFileSync(outputFile, out.css);
+                        totalFiles--;
+                        if (totalFiles == 0) {
+                            if (callback) {
+                                callback();
+                            }
+                        }
+                        console.log(file + " => " + outputFile);
+                    } else {
+                        totalFiles--;
+                        if (totalFiles == 0) {
+                            if (callback) {
+                                callback();
+                            }
                         }
                     }
-                    console.log(file + " => " + outputFile);
-                } else {
-                    totalFiles--;
-                    if (totalFiles == 0) {
-                        if (callback) {
-                            callback();
-                        }
-                    }
-                }
+                }); 
             });
         });
-    });
+    }
 };
 
 
