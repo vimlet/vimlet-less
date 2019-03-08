@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var io = require("@vimlet/io");
+var io = require("@vimlet/commons-io");
 var path = require("path");
 var fs = require("fs-extra");
 var cli = require("@vimlet/cli").instantiate();
