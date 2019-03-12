@@ -10,11 +10,12 @@ var deasync = require("deasync");
 
 
 
-
+// @functin render (public) [Parse given less files] @param include @param output @param options @param callback
 module.exports.render = function (include, output, options, callback) {
     options = options || {};
     if (options.clean) {
         fs.removeSync(output);
+
     }
     var totalFiles = 0;
     var rootsArray = io.getFiles(include, options);
@@ -29,35 +30,56 @@ module.exports.render = function (include, output, options, callback) {
         rootsArray.forEach(function (rootObject) {
             rootObject.files.forEach(function (relativePath) {
                 var file = path.join(rootObject.root, relativePath);
-                less.render(fs.readFileSync(file).toString(), {
-                    filename: file
-                }, function (e, out) {
-                    if (out && out.css) {
-                        outputFile = path.join(process.cwd(), output, relativePath).replace(".less", ".css");
-                        fs.mkdirsSync(path.dirname(outputFile));
-                        fs.writeFileSync(outputFile, out.css);
-                        totalFiles--;
-                        if (totalFiles == 0) {
-                            if (callback) {
-                                callback();
-                            }
-                        }
-                        console.log(file + " => " + outputFile);
-                    } else {
-                        totalFiles--;
-                        if (totalFiles == 0) {
-                            if (callback) {
-                                callback();
-                            }
+                var outputFile = path.join(process.cwd(), output, relativePath).replace(".less", ".css");
+                render(file, outputFile, function () {
+                    console.log(file + " => " + outputFile);
+                    totalFiles--;
+                    if (totalFiles == 0) {
+                        if (callback) {
+                            callback();
                         }
                     }
-                }); 
+                });
             });
         });
     }
 };
 
+// @functin render (private) [Parse single less file] @param file @param output @param callback
+function render(file, output, callback) {
+    fs.readFile(file, function (error, data) {
+        less.render(
+            data.toString(), {
+                filename: file
+            },
+            function (e, out) {
+                if (out && out.css) {
+                    fs.mkdirs(path.dirname(output), function (error) {
+                        if (!error) {
+                            fs.writeFile(output, out.css, function (error, data) {
+                                if (!error) {
+                                    if (callback) {
+                                        callback();
+                                    }
+                                } else {
+                                    console.log("Error " + file);
+                                }
+                            });
+                        } else {
+                            console.log("Error " + file);
+                        }
+                    });
+                } else {
+                    if (callback) {
+                        callback();
+                    }
+                }
+            });
+    });
+}
 
+
+// @functin renderSync (public) [Render included files and wait for all to finish] @param include @param output @param options
 module.exports.renderSync = function (include, output, options) {
     var done = false;
     var data;
@@ -70,6 +92,7 @@ module.exports.renderSync = function (include, output, options) {
     });
 };
 
+// @functin watch (public) [Parse less files from include and keep looking for changes] @param include @param output @param options
 module.exports.watch = function (include, output, options) {
     module.exports.render(include, output, options);
     watch.watch(include, output, options);

@@ -6,9 +6,9 @@ var output = "output";
 var lessF = "resources/less";
 
 
-less.render(lessF, output, {clean:true}, function(){
-    console.log("Done!");    
-});
+// less.render(lessF, output, {clean:true}, function(){
+//     console.log("Done!");    
+// });
 
 
 // less.render(include, output, {exclude: excludeFolder, clean:true}, function(){
@@ -16,4 +16,4 @@ less.render(lessF, output, {clean:true}, function(){
 // });
 
 
-// less.watch(include, output, {exclude: excludeFolder});
+less.watch(include, output, {exclude: excludeFolder});

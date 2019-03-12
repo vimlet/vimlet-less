@@ -16,32 +16,22 @@ exports.watch = function (include, output, options) {
     if (!isExcluded(options.exclude, filePath)) {
       // Relative output is where the template will be saved after parsed
       var relativeOutput = getRelativeOutput(include, output, filePath);
-      less.render(fs.readFileSync(path.join(filePath)).toString(), {
-        filename: filePath
-      }, function (e, out) {
-        if (out && out.css) {
-          outputFile = path.join(relativeOutput, path.basename(filePath)).replace(".less", ".css");
-          fs.mkdirsSync(path.dirname(outputFile));
-          fs.writeFileSync(outputFile, out.css);
-          console.log("Changed --> ", filePath + " => " + path.join(relativeOutput, path.basename(filePath)).replace(".less", ".css"));
-        }
+      var file = path.resolve(filePath);
+      var outputFile = path.join(relativeOutput, path.basename(filePath)).replace(".less", ".css");
+      render(file, outputFile, function(){
+        console.log("Changed --> ", filePath + " => " + path.join(relativeOutput, path.basename(filePath)).replace(".less", ".css"));
       });
     }
   });
-  watcher.on('add', function (filePath, stat) {    
+  watcher.on('add', function (filePath, stat) {
     if (!isExcluded(options.exclude, filePath)) {
       // Relative output is where the template will be saved after parsed
       var relativeOutput = getRelativeOutput(include, output, filePath);
       // Parse modified file      
-      less.render(fs.readFileSync(path.join(filePath)).toString(), {
-        filename: filePath
-      }, function (e, out) {
-        if (out && out.css) {
-          outputFile = path.join(relativeOutput, path.basename(filePath)).replace(".less", ".css");
-          fs.mkdirsSync(path.dirname(outputFile));
-          fs.writeFileSync(outputFile, out.css);
-          console.log("Added --> ", filePath + " => " + path.join(relativeOutput, path.basename(filePath)));
-        }
+      var file = path.resolve(filePath);
+      outputFile = path.join(relativeOutput, path.basename(filePath)).replace(".less", ".css");
+      render(file, outputFile, function(){
+        console.log("Added --> ", filePath + " => " + path.join(relativeOutput, path.basename(filePath)));
       });
     }
   });
@@ -49,15 +39,18 @@ exports.watch = function (include, output, options) {
     if (!isExcluded(options.exclude, filePath)) {
       // Relative output is where the template will be saved after parsed
       var relativeOutput = getRelativeOutput(include, output, filePath, true);
-      var parsedPath = path.join(relativeOutput, path.basename(filePath).replace(".less", ".css"));      
-      if (fs.existsSync(parsedPath)) {
-        fs.unlinkSync(parsedPath);
-        console.log("Removed --> ", parsedPath);
-      }
+      var parsedPath = path.join(relativeOutput, path.basename(filePath).replace(".less", ".css"));
+      fs.pathExists(parsedPath, function(err, exists) {
+        if(!err){
+          fs.remove(parsedPath, function(){
+            console.log("Removed --> ", parsedPath);
+          });
+        }
+      });
     }
   });
   watcher.on('addDir', function (filePath, stat) {
-    var relativeOutput = getRelativeOutput(include, output, filePath);    
+    var relativeOutput = getRelativeOutput(include, output, filePath);
     fs.mkdirs(path.join(relativeOutput, path.basename(filePath)), function () {
       console.log("Folder created --> ", filePath, "=>", path.join(relativeOutput, path.basename(filePath)));
     });
@@ -125,7 +118,7 @@ exports.watchDirectory = function (include, exclude, callback) {
 */
 function getRelativeOutput(include, output, filePath, deleted) {
   var relativeOutput;
-  if (!Array.isArray(include)) {        
+  if (!Array.isArray(include)) {
     if (io.isInPattern(filePath, include) || deleted) {
       var rootFromPattern = io.getRootFromPattern(include);
       // Relative output is where the template will be saved after parse
@@ -141,7 +134,7 @@ function getRelativeOutput(include, output, filePath, deleted) {
         relativeOutput = path.join(output, relativeOutput);
       }
     });
-  }  
+  }
   return relativeOutput;
 }
 
@@ -166,4 +159,38 @@ function isExcluded(excluded, filePath) {
     });
     return isIn;
   }
+}
+
+
+// @functin render (private) [Parse single less file] @param file @param output @param callback
+function render(file, output, callback) {
+  fs.readFile(file, function (error, data) {
+    less.render(
+      data.toString(), {
+        filename: file
+      },
+      function (e, out) {
+        if (out && out.css) {
+          fs.mkdirs(path.dirname(output), function (error) {
+            if (!error) {
+              fs.writeFile(output, out.css, function (error, data) {
+                if (!error) {
+                  if (callback) {
+                    callback();
+                  }
+                } else {
+                  console.log("Error " + file);
+                }
+              });
+            } else {
+              console.log("Error " + file);
+            }
+          });
+        }else{
+          if (callback) {
+            callback();
+          }
+        }
+      });
+  });
 }
