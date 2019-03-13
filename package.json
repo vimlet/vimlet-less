@@ -1,6 +1,6 @@
 {
   "name": "@vimlet/less-watcher",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "",
   "main": "src/index.js",
   "bin": {
@@ -9,7 +9,7 @@
   "scripts": {},
   "dependencies": {
     "@vimlet/cli": "1.2.6",
-    "@vimlet/commons-io": "0.0.8",
+    "@vimlet/commons-io": "0.0.9",
     "less": "3.8.1",
     "glob-watcher": "5.0.1",
     "deasync": "0.1.14"
