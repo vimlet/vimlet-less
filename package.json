@@ -9,7 +9,7 @@
   "scripts": {},
   "dependencies": {
     "@vimlet/cli": "1.2.6",
-    "@vimlet/commons-io": "0.0.9",
+    "@vimlet/commons-io": "0.0.11",
     "less": "3.8.1",
     "glob-watcher": "5.0.1",
     "deasync": "0.1.14"

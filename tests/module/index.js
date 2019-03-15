@@ -11,9 +11,9 @@ var lessF = "resources/less";
 // });
 
 
-// less.render(include, output, {exclude: excludeFolder, clean:true}, function(){
-//     console.log("Done!");    
-// });
+less.render(include, output, {exclude: excludeFolder, clean:true}, function(){
+    console.log("Done!");    
+});
 
 
-less.watch(include, output, {exclude: excludeFolder});
+// less.watch(include, output, {exclude: excludeFolder});

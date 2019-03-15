@@ -11,11 +11,10 @@ var deasync = require("deasync");
 
 
 // @functin render (public) [Parse given less files] @param include @param output @param options @param callback
-module.exports.render = function (include, output, options, callback) {
+module.exports.render = async function (include, output, options, callback) {
     options = options || {};
-    if (options.clean) {
-        fs.removeSync(output);
-
+    if (options.clean) {        
+        await io.deleteFolderRecursiveAsync(output);                
     }
     var totalFiles = 0;
     var rootsArray = io.getFiles(include, options);
