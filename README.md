@@ -27,13 +27,16 @@ npm install @vimlet/less
 
     `{
         "exclude": "glob patterns",
-        "clean": false
+        "clean": false,
+        "hideLog":true
     }`
 
     * include: Directory to look for files.
-    * exclude: Used to skip files that you don't want to compile.
     * output: Directory where files will be written using.
-    * clean: Empty output directory before compile.
+    * options:{}
+    * options.exclude: Used to skip files that you don't want to compile.
+    * options.clean: Empty output directory before compile.
+    * options.hideLog: Remove console log of parsed files.
 
 ### Command mode:
 

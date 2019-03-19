@@ -13,8 +13,8 @@ var deasync = require("deasync");
 // @functin render (public) [Parse given less files] @param include @param output @param options @param callback
 module.exports.render = async function (include, output, options, callback) {
     options = options || {};
-    if (options.clean) {        
-        await io.deleteFolderRecursiveAsync(output);                
+    if (options.clean) {
+        await io.deleteFolderRecursiveAsync(output);
     }
     var totalFiles = 0;
     var rootsArray = io.getFiles(include, options);
@@ -31,7 +31,9 @@ module.exports.render = async function (include, output, options, callback) {
                 var file = path.join(rootObject.root, relativePath);
                 var outputFile = path.join(process.cwd(), output, relativePath).replace(".less", ".css");
                 render(file, outputFile, function () {
-                    console.log(file + " => " + outputFile);
+                    if (!options.hideLog) {
+                        console.log(file + " => " + outputFile);
+                    }
                     totalFiles--;
                     if (totalFiles == 0) {
                         if (callback) {
@@ -118,6 +120,7 @@ if (!module.parent) {
         .value("-e", "--exclude", "Exclude patterns", list)
         .value("-o", "--output", "Output path")
         .flag("-c", "--clean", "Clean output directory")
+        .flag("-l", "--log", "Hide logs")
         .value("-w", "--watch", "Keeps watching for changes")
         .flag("-h", "--help", "Shows help")
         .parse(process.argv);
@@ -128,11 +131,13 @@ if (!module.parent) {
     var exclude = cli.result.exclude || "**node_modules**";
     var output = cli.result.output || cwd;
     var clean = cli.result.clean || false;
-
+    var hideLog = cli.result.log || false;
+    
 
     var options = {};
     options.exclude = exclude;
     options.clean = clean;
+    options.hideLog = hideLog;
 
     if (cli.result.help) {
         cli.printHelp();
