@@ -2,7 +2,7 @@ var less = "../../src";
 var commons = require("@vimlet/commons");
 
 
-commons.run.exec("node", [less, "-i", "resources/**/*.*", "-o", "output", "-e", "resources/exclude/*", "-c"], null, null, function (error, data) {
+commons.run.exec("node", {"args":[less, "-i", "resources/**/*.*", "-o", "output", "-e", "resources/exclude/*", "-c"]}, function (error, data) {
     if (error) {
       console.error(error);
     } else {

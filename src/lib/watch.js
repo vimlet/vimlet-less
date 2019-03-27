@@ -5,63 +5,64 @@ var fs = require("fs-extra");
 var less = require("less");
 
 exports.watch = function (include, output, options) {
-  var meta = require("../index.js");
   options = options || {};
   options.clean = false;
-  console.log("Watching:", include);
   var watcher = watch(include, {
     events: ['add', 'change', 'unlink', 'addDir', 'unlinkDir']
   });
-  watcher.on('change', function (filePath, stat) {
-    if (!isExcluded(options.exclude, filePath)) {
+  watcher.on('change', async function (filePath, stat) {
+    var excluded = await isExcluded(options.exclude, filePath);
+    if (!excluded) {
       // Relative output is where the template will be saved after parsed
-      var relativeOutput = getRelativeOutput(include, output, filePath);
+      var relativeOutput = await getRelativeOutput(include, output, filePath);
       var file = path.resolve(filePath);
       var outputFile = path.join(relativeOutput, path.basename(filePath)).replace(".less", ".css");
-      render(file, outputFile, function(){
+      render(file, outputFile, function () {
         console.log("Changed --> ", filePath + " => " + path.join(relativeOutput, path.basename(filePath)).replace(".less", ".css"));
       });
     }
   });
-  watcher.on('add', function (filePath, stat) {
-    if (!isExcluded(options.exclude, filePath)) {
+  watcher.on('add', async function (filePath, stat) {
+    var excluded = await isExcluded(options.exclude, filePath);
+    if (!excluded) {
       // Relative output is where the template will be saved after parsed
-      var relativeOutput = getRelativeOutput(include, output, filePath);
+      var relativeOutput = await getRelativeOutput(include, output, filePath);
       // Parse modified file      
       var file = path.resolve(filePath);
       outputFile = path.join(relativeOutput, path.basename(filePath)).replace(".less", ".css");
-      render(file, outputFile, function(){
+      render(file, outputFile, function () {
         console.log("Added --> ", filePath + " => " + path.join(relativeOutput, path.basename(filePath)));
       });
     }
   });
-  watcher.on('unlink', function (filePath, stat) {
-    if (!isExcluded(options.exclude, filePath)) {
+  watcher.on('unlink', async function (filePath, stat) {
+    var excluded = await isExcluded(options.exclude, filePath);
+    if (!excluded) {
       // Relative output is where the template will be saved after parsed
-      var relativeOutput = getRelativeOutput(include, output, filePath, true);
+      var relativeOutput = await getRelativeOutput(include, output, filePath, true);
       var parsedPath = path.join(relativeOutput, path.basename(filePath).replace(".less", ".css"));
-      fs.pathExists(parsedPath, function(err, exists) {
-        if(!err){
-          fs.remove(parsedPath, function(){
+      fs.pathExists(parsedPath, function (err, exists) {
+        if (!err) {
+          fs.remove(parsedPath, function () {
             console.log("Removed --> ", parsedPath);
           });
         }
       });
     }
   });
-  watcher.on('addDir', function (filePath, stat) {
-    var relativeOutput = getRelativeOutput(include, output, filePath);
+  watcher.on('addDir', async function (filePath, stat) {
+    var relativeOutput = await getRelativeOutput(include, output, filePath);
     fs.mkdirs(path.join(relativeOutput, path.basename(filePath)), function () {
       console.log("Folder created --> ", filePath, "=>", path.join(relativeOutput, path.basename(filePath)));
     });
   });
-  watcher.on('unlinkDir', function (filePath, stat) {
-    var relativeOutput = getRelativeOutput(include, output, filePath, true);
+  watcher.on('unlinkDir', async function (filePath, stat) {
+    var relativeOutput = await getRelativeOutput(include, output, filePath, true);
     fs.remove(path.join(relativeOutput, path.basename(filePath)), function () {
       console.log("Folder removed --> ", path.join(relativeOutput, path.basename(filePath)));
     });
   });
-  watcher.on('error', function (error) {
+  watcher.on('error', async function (error) {
     if (process.platform === 'win32' && error.code === 'EPERM') {
       // Deleting an empty folder doesn't fire on windows
     } else {
@@ -71,30 +72,33 @@ exports.watch = function (include, output, options) {
 };
 
 exports.watchDirectory = function (include, exclude, callback) {
-  var meta = require("../index.js");
   var watcher = watch(include, {
     events: ['add', 'change', 'unlink', 'unlinkDir']
   });
-  watcher.on('change', function (filePath, stat) {
-    if (!isExcluded(exclude, filePath)) {
+  watcher.on('change', async function (filePath, stat) {
+    var excluded = await isExcluded(exclude, filePath);
+    if (!excluded) {
       console.log("Changed --> ", filePath);
       callback();
     }
   });
-  watcher.on('add', function (filePath, stat) {
-    if (!isExcluded(exclude, filePath)) {
+  watcher.on('add', async function (filePath, stat) {
+    var excluded = await isExcluded(exclude, filePath);
+    if (!excluded) {
       console.log("Added --> ", filePath);
       callback();
     }
   });
-  watcher.on('unlink', function (filePath, stat) {
-    if (!isExcluded(exclude, filePath)) {
+  watcher.on('unlink', async function (filePath, stat) {
+    var excluded = await isExcluded(exclude, filePath);
+    if (!excluded) {
       console.log("Removed --> ", filePath);
       callback();
     }
   });
-  watcher.on('unlinkDir', function (filePath, stat) {
-    if (!isExcluded(exclude, filePath)) {
+  watcher.on('unlinkDir', async function (filePath, stat) {
+    var excluded = await isExcluded(exclude, filePath);
+    if (!excluded) {
       console.log("Directory removed --> ", filePath);
       callback();
     }
@@ -116,26 +120,30 @@ exports.watchDirectory = function (include, exclude, callback) {
 @param filePath
 @param deleted [Flag to know if the file was deleted so it skips files in pattern check]
 */
-function getRelativeOutput(include, output, filePath, deleted) {
-  var relativeOutput;
-  if (!Array.isArray(include)) {
-    if (io.isInPattern(filePath, include) || deleted) {
-      var rootFromPattern = io.getRootFromPattern(include);
-      // Relative output is where the template will be saved after parse
-      relativeOutput = path.dirname(path.relative(rootFromPattern, filePath));
-      relativeOutput = path.join(output, relativeOutput);
-    }
-  } else {
-    include.forEach(function (incl) {
-      if (io.isInPattern(filePath, incl) || deleted) {
-        var rootFromPattern = io.getRootFromPattern(incl);
+async function getRelativeOutput(include, output, filePath, deleted) {
+  return new Promise(async function (resolve, reject) {
+    var relativeOutput;
+    if (!Array.isArray(include)) {
+      var inPattern = await io.isInPattern(filePath, include, null);
+      if (inPattern || deleted) {
+        var rootFromPattern = await io.getRootFromPattern(include);
         // Relative output is where the template will be saved after parse
         relativeOutput = path.dirname(path.relative(rootFromPattern, filePath));
         relativeOutput = path.join(output, relativeOutput);
       }
-    });
-  }
-  return relativeOutput;
+    } else {
+      for (const incl of include) {
+        var inPattern = await io.isInPattern(filePath, incl, null);
+        if (inPattern || deleted) {
+          var rootFromPattern = await io.getRootFromPattern(incl);
+          // Relative output is where the template will be saved after parse
+          relativeOutput = path.dirname(path.relative(rootFromPattern, filePath));
+          relativeOutput = path.join(output, relativeOutput);
+        }
+      }
+    }
+    resolve(relativeOutput);
+  });
 }
 
 /*
@@ -144,21 +152,25 @@ function getRelativeOutput(include, output, filePath, deleted) {
 @param filePath
 @return boolean
 */
-function isExcluded(excluded, filePath) {
-  if (!excluded) {
-    return false;
-  }
-  if (!Array.isArray(excluded)) {
-    return io.isInPattern(filePath, excluded);
-  } else {
-    var isIn = false;
-    excluded.forEach(function (excl) {
-      if (io.isInPattern(filePath, excl)) {
-        isIn = true;
+async function isExcluded(excluded, filePath) {
+  return new Promise(async function (resolve, reject) {
+    if (!excluded) {
+      resolve(false);
+    }
+    if (!Array.isArray(excluded)) {
+      var inPattern = await io.isInPattern(filePath, excluded, null);
+      resolve(inPattern);
+    } else {
+      var isIn = false;
+      for (const excl of excluded) {
+        var inPattern = await io.isInPattern(filePath, excl, null);
+        if (inPattern) {
+          isIn = true;
+        }
       }
-    });
-    return isIn;
-  }
+      resolve(isIn);
+    }
+  });
 }
 
 
@@ -186,7 +198,7 @@ function render(file, output, callback) {
               console.log("Error " + file);
             }
           });
-        }else{
+        } else {
           if (callback) {
             callback();
           }
