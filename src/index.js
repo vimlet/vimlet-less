@@ -17,9 +17,7 @@ module.exports.render = async function (include, output, options, callback) {
         await io.deleteFolderRecursive(output);
     }
     var totalFiles = 0;
-    var rootsArray = await io.getFiles(include, options);
-    console.log(rootsArray);
-    
+    var rootsArray = await io.getFiles(include, options);    
     rootsArray.forEach(function (rootObject) {
         totalFiles += rootObject.files.length;
     });
@@ -29,10 +27,7 @@ module.exports.render = async function (include, output, options, callback) {
         }
     } else {
         rootsArray.forEach(function (rootObject) {
-            rootObject.files.forEach(function (relativePath) {
-                console.log(rootObject.root);
-                console.log(relativePath);
-                
+            rootObject.files.forEach(function (relativePath) {                
                 var file = path.join(rootObject.root, relativePath);
                 var outputFile = path.join(process.cwd(), output, relativePath).replace(".less", ".css");
                 render(file, outputFile, function () {
