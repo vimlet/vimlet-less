@@ -98,7 +98,7 @@ module.exports.watch = function (include, output, options) {
     module.exports.render(include, output, options);
     watch.watch(include, output, options);
     if (options && options.watchdirectory) {
-        watch.watchDirectory(options.watchdirectory, include, function () {
+        watch.watchDirectory(options.watchdirectory, options.exclude, function () {
             module.exports.render(include, output, options);
         });
     }
