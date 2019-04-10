@@ -9,6 +9,8 @@ This is a tool that compile less files.
 * Compile less files.
 * Watcher to look for changes and update files on the fly.
 
+You can access the source code at [vimlet/less-watcher](https://github.com/vimlet/vimlet-less)
+
 ## Installation
 
 npm install @vimlet/less

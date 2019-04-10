@@ -15,6 +15,10 @@
     "glob-watcher": "5.0.3",
     "deasync": "0.1.14"
   },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/vimlet/vimlet-less"
+  },
   "author": "",
   "license": "MIT"
 }
